@@ -1,0 +1,47 @@
+import requests
+
+def analisar_codigo(codigo_java, contexto="Você é um especialista em Maven e Java."):
+    """
+    Envia um trecho de código ou arquivo Java para o modelo Qwen 2.5 para análise detalhada.
+
+    Args:
+        codigo_java (str): Trecho ou arquivo de código para análise.
+        contexto (str): Contexto para o modelo, indicando o tipo de análise necessária.
+
+    Returns:
+        str: Resposta detalhada do modelo.
+    """
+    url = "http://localhost:11434/api/chat"
+    prompt = f"""{contexto}
+Analise o código ou arquivo abaixo e aponte erros críticos, além de sugerir correções detalhadas:
+{codigo_java}"""
+
+    data = {
+        "model": "qwen2.5-coder:1.5b",
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "stream": False
+    }
+
+    try:
+        response = requests.post(url, json=data)
+        response.raise_for_status()
+        return response.json().get('message', {}).get('content', "Resposta não encontrada")
+    except requests.exceptions.RequestException as e:
+        return f"Erro na requisição: {e}"
+
+# Exemplo de uso
+if __name__ == "__main__":
+    print("=== Analisador de Códigos Maven e Java ===")
+    while True:
+        print("\nDigite o conteúdo para análise (ou 'sair' para encerrar):")
+        codigo = input("Código ou arquivo: ")
+
+        if codigo.lower() == "sair":
+            print("Encerrando...")
+            break
+
+        resposta = analisar_codigo(codigo)
+        print("\nResposta do modelo:")
+        print(resposta)
